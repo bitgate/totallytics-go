@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: go ${{ matrix.go }} ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ["1.22", stable]
+        module: [".", chi, gin, echo]
+        include:
+          - module: chi
+            framework: github.com/go-chi/chi/v5
+          - module: gin
+            framework: github.com/gin-gonic/gin
+          - module: echo
+            framework: github.com/labstack/echo/v4
+    env:
+      GOTOOLCHAIN: local
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache-dependency-path: "**/go.sum"
+      - run: go version
+      - run: go vet ./...
+      - run: go test -race ./...
+      - name: staticcheck
+        if: matrix.go == 'stable'
+        run: go run honnef.co/go/tools/cmd/staticcheck@latest ./...
+      - name: test with the latest ${{ matrix.module }} release
+        if: matrix.go == 'stable' && matrix.framework
+        run: |
+          go get -t ${{ matrix.framework }}@latest
+          go test -race ./...

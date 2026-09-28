@@ -12,6 +12,7 @@ Go SDK for Totallytics API analytics, port of bitgate/totallytics-js (its WIRE.m
 ## Release
 - Bump `Version` in version.go. Tag the same commit `vX.Y.Z`, `chi/vX.Y.Z`, `gin/vX.Y.Z`, `echo/vX.Y.Z`. If adapters need new root API, bump their `require github.com/bitgate/totallytics-go` first.
 - Then fetch `https://proxy.golang.org/github.com/bitgate/totallytics-go/@v/vX.Y.Z.info` (and adapters) so pkg.go.dev indexes it.
+- Push with the fine-grained PAT: the bitgate org rejects classic PATs (git and API, incl. the visibility PATCH).
 
 ## Decisions / gotchas
 - Min Go 1.22 (ServeMux patterns). `Request.Pattern` is 1.23+ and set in place on the request the mux gets, so an outer Middleware sees it unless a layer in between copies the request (then wrap twice; nested Start only reports the route out). 1.22 build asks `mux.Handler(r)` when next is the *ServeMux itself. Subtree patterns ("/static/"), redirects, 404/405 -> raw path.
@@ -19,6 +20,10 @@ Go SDK for Totallytics API analytics, port of bitgate/totallytics-js (its WIRE.m
 - Deviations from JS: buffer rotates at MaxBatchRows (JS timer path waits for 10k keys); 499 for aborted or unwritten responses; 401 warning via Logger.Warn once per process, everything else Debug.
 - chi: 404 inside Mount/Route records the mount pattern ("/admin/*"), top-level 404 the raw path. echo: 404 gives c.Path() "" -> raw path; adapter calls c.Error(err) then returns err (like echo's RequestLogger with HandleError).
 - echo/v5 needs Go 1.25: separate adapter module if ever wanted.
+- Dependabot shows ~40 alerts: all in the gin/echo go.mod minimums (x/crypto, x/net, x/text, x/sys, echo v4.13.3 GO-2026-6293). govulncheck symbol scan: 0 reachable. Every fixed version needs go >= 1.25 (x/crypto v0.56.0 needs 1.26), so a clean tab means dropping Go 1.22 for the adapters. Consumers get max(versions) via MVS, so the floors never downgrade anyone. Decision pending with Bart.
+
+## Status
+- v0.1.0, chi/v0.1.0, gin/v0.1.0, echo/v0.1.0 tagged at fbcf106 (CI #2 green), resolvable via proxy.golang.org on go1.22 and go1.27.
 
 ## Verified for v0.1.0
 - Conformance vs totallytics-js v0.1.0 on node 22: 10307 bucket values (incl. +-2 ulp around every boundary), 6 batch scenarios, identical.

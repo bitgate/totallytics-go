@@ -1,17 +1,17 @@
-# KEVIN.md: totallytics-go
+# KEVIN.md: clicktag-go
 
-Go SDK for Totallytics API analytics, port of bitgate/totallytics-js (its WIRE.md v1 is the contract). Must stay PUBLIC (proxy.golang.org / pkg.go.dev).
+Go SDK for Clicktag API analytics, port of clicktag-io/clicktag-js (was bitgate/totallytics-js) (its WIRE.md v1 is the contract). Must stay PUBLIC (proxy.golang.org / pkg.go.dev).
 
 ## Layout
-- Root module `github.com/bitgate/totallytics-go`, pkg `totallytics`, zero deps, `go 1.22`.
-  - totallytics.go: Client, Options, record/flush/seal, measure, clip (UTF-16 aware like JS). aggregator.go, histogram.go (bucket + jsLog), transport.go (batch, retries, 413 split, pending cap 20), middleware.go (Start/Finish/Handler/Middleware, responseWriter), route.go + pattern_go122.go/pattern_go123.go.
-- Adapters, own go.mod each with `replace => ../` (ignored by consumers): chi/ (pkg totallyticschi, chi v5.2.5), gin/ (totallyticsgin, gin v1.10.1), echo/ (totallyticsecho, echo/v4 v4.13.3). Floors = newest releases still on go <= 1.22. CI stable leg also tests framework @latest.
-- testdata/conformance.json: `node testdata/gen-conformance.mjs ../totallytics-js > testdata/conformance.json` (needs the JS repo with dist/ built, node 22).
-- CI: .github/workflows/ci.yml, matrix go 1.22 + stable x {root, chi, gin, echo}, GOTOOLCHAIN=local, vet, test -race, staticcheck (stable).
+- Root module `github.com/clicktag-io/clicktag-go` (v0.1.0 was `github.com/bitgate/totallytics-go`), pkg `clicktag`, zero deps, `go 1.22`.
+  - clicktag.go: Client, Options, record/flush/seal, measure, clip (UTF-16 aware like JS). aggregator.go, histogram.go (bucket + jsLog), transport.go (batch, retries, 413 split, pending cap 20), middleware.go (Start/Finish/Handler/Middleware, responseWriter), route.go + pattern_go122.go/pattern_go123.go.
+- Adapters, own go.mod each with `replace => ../` (ignored by consumers): chi/ (pkg clicktagchi, chi v5.2.5), gin/ (clicktaggin, gin v1.10.1), echo/ (clicktagecho, echo/v4 v4.13.3). Floors = newest releases still on go <= 1.22. CI stable leg also tests framework @latest.
+- testdata/conformance.json: `node testdata/gen-conformance.mjs ../clicktag-js > testdata/conformance.json` (0.3.0+, it loads `Clicktag`) (needs the JS repo with dist/ built, node 22).
+- CI: .github/workflows/ci.yml, matrix go 1.22 + stable x {root, chi, gin, echo}, GOTOOLCHAIN=local, vet, test -race, staticcheck@master on stable (v0.8.1 can't read Go 1.27 export data).
 
 ## Release
-- Bump `Version` in version.go. Tag the same commit `vX.Y.Z`, `chi/vX.Y.Z`, `gin/vX.Y.Z`, `echo/vX.Y.Z`. If adapters need new root API, bump their `require github.com/bitgate/totallytics-go` first.
-- Then fetch `https://proxy.golang.org/github.com/bitgate/totallytics-go/@v/vX.Y.Z.info` (and adapters) so pkg.go.dev indexes it.
+- Bump `Version` in version.go. Tag the same commit `vX.Y.Z`, `chi/vX.Y.Z`, `gin/vX.Y.Z`, `echo/vX.Y.Z`. If adapters need new root API, bump their `require github.com/clicktag-io/clicktag-go` first.
+- Then fetch `https://proxy.golang.org/github.com/clicktag-io/clicktag-go/@v/vX.Y.Z.info` (and adapters) so pkg.go.dev indexes it.
 - Push with the fine-grained PAT: the bitgate org rejects classic PATs (git and API, incl. the visibility PATCH).
 
 ## Decisions / gotchas
@@ -23,6 +23,7 @@ Go SDK for Totallytics API analytics, port of bitgate/totallytics-js (its WIRE.m
 - Dependabot shows ~40 alerts: all in the gin/echo go.mod minimums (x/crypto, x/net, x/text, x/sys, echo v4.13.3 GO-2026-6293). govulncheck symbol scan: 0 reachable. Every fixed version needs go >= 1.25 (x/crypto v0.56.0 needs 1.26), so a clean tab means dropping Go 1.22 for the adapters. Consumers get max(versions) via MVS, so the floors never downgrade anyone. Decision pending with Bart.
 
 ## Status
+- v0.2.0 = rename (PR #1, 2026-10-11): new module path, `CLICKTAG_API_KEY` with `TOTALLYTICS_API_KEY` fallback. Tag v0.2.0 + chi/gin/echo v0.2.0 on the merge commit after the repo moved to clicktag-io.
 - v0.1.0, chi/v0.1.0, gin/v0.1.0, echo/v0.1.0 tagged at fbcf106 (CI #2 green), resolvable via proxy.golang.org on go1.22 and go1.27.
 
 ## Verified for v0.1.0

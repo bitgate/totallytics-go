@@ -1,6 +1,6 @@
 //go:build go1.23
 
-package totallytics
+package clicktag
 
 import "net/http"
 

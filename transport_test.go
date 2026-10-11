@@ -1,4 +1,4 @@
-package totallytics
+package clicktag
 
 import (
 	"bytes"
@@ -113,7 +113,7 @@ func TestUnauthorizedWarnsOncePerProcess(t *testing.T) {
 	if got := len(ingest.requests()); got != 4 {
 		t.Errorf("got %d requests, want 4 without retries", got)
 	}
-	if got := logs.count("WARN totallytics: ingest rejected the API key (401)"); got != 1 {
+	if got := logs.count("WARN clicktag: ingest rejected the API key (401)"); got != 1 {
 		t.Errorf("warned %d times, want once", got)
 	}
 }

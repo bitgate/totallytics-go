@@ -1,4 +1,4 @@
-package totallytics
+package clicktag
 
 import (
 	"bufio"
@@ -41,7 +41,7 @@ func TestMiddlewareRecordsRequest(t *testing.T) {
 	if got := r.header.Get("Content-Type"); got != "application/json" {
 		t.Errorf("Content-Type = %q", got)
 	}
-	if got := r.header.Get("User-Agent"); got != "totallytics-go/"+Version {
+	if got := r.header.Get("User-Agent"); got != "clicktag-go/"+Version {
 		t.Errorf("User-Agent = %q", got)
 	}
 	if bytes.Contains(r.body, []byte("secret")) {
@@ -52,7 +52,7 @@ func TestMiddlewareRecordsRequest(t *testing.T) {
 	}
 
 	p := r.payload
-	if p.V != 1 || len(p.BatchID) != 32 || p.SDK != "totallytics-go/"+Version+" net/http" {
+	if p.V != 1 || len(p.BatchID) != 32 || p.SDK != "clicktag-go/"+Version+" net/http" {
 		t.Errorf("envelope = v%d, batch_id %q, sdk %q", p.V, p.BatchID, p.SDK)
 	}
 	if len(p.Metrics) != 1 {
@@ -191,7 +191,7 @@ func TestCallbacksThatPanicAreContained(t *testing.T) {
 }
 
 func TestNilAndKeylessClientsPassThrough(t *testing.T) {
-	t.Setenv("TOTALLYTICS_API_KEY", "")
+	t.Setenv("CLICKTAG_API_KEY", "")
 	ingest := newIngest(t, nil)
 	ctx := context.Background()
 
@@ -217,8 +217,22 @@ func TestNilAndKeylessClientsPassThrough(t *testing.T) {
 	}
 }
 
+func TestLegacyAPIKeyFromEnvironment(t *testing.T) {
+	t.Setenv("CLICKTAG_API_KEY", "")
+	t.Setenv("TOTALLYTICS_API_KEY", testKey)
+	ingest := newIngest(t, nil)
+	c := New(Options{Endpoint: ingest.URL})
+	do(c.Middleware(ok), http.MethodGet, "/")
+	shutdown(t, c)
+
+	requests := ingest.requests()
+	if len(requests) != 1 || requests[0].header.Get("Authorization") != "Bearer "+testKey {
+		t.Errorf("requests = %d", len(requests))
+	}
+}
+
 func TestAPIKeyFromEnvironment(t *testing.T) {
-	t.Setenv("TOTALLYTICS_API_KEY", "  "+testKey+"\n")
+	t.Setenv("CLICKTAG_API_KEY", "  "+testKey+"\n")
 	ingest := newIngest(t, nil)
 	c := New(Options{Endpoint: ingest.URL})
 	do(c.Middleware(ok), http.MethodGet, "/")
@@ -247,7 +261,7 @@ func TestMaxBatchRowsSplitsBatches(t *testing.T) {
 	var sizes []string
 	for _, r := range ingest.requests() {
 		sizes = append(sizes, fmt.Sprintf("%d/%d", len(r.payload.Metrics), len(r.payload.Errors)))
-		if r.payload.SDK != "totallytics-go/"+Version+" test" {
+		if r.payload.SDK != "clicktag-go/"+Version+" test" {
 			t.Errorf("sdk = %q", r.payload.SDK)
 		}
 	}

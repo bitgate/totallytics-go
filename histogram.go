@@ -1,4 +1,4 @@
-package totallytics
+package clicktag
 
 import "math"
 

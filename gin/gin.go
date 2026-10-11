@@ -1,16 +1,16 @@
-// Package totallyticsgin records requests to a gin engine for Totallytics API
+// Package clicktaggin records requests to a gin engine for Clicktag API
 // analytics, with gin routes as templates.
 //
 //	engine := gin.New()
-//	engine.Use(gin.Recovery(), totallyticsgin.Middleware(tt))
+//	engine.Use(gin.Recovery(), clicktaggin.Middleware(tt))
 //	engine.GET("/users/:id", getUser)
-package totallyticsgin
+package clicktaggin
 
 import (
 	"fmt"
 	"net/http"
 
-	"github.com/bitgate/totallytics-go"
+	"github.com/clicktag-io/clicktag-go"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,7 +20,7 @@ const statusClientClosedRequest = 499
 // panics, which it records as 500 and re-panics for gin.Recovery. The last
 // error added with c.Error is sent with 4xx and 5xx responses. Register it
 // with engine.Use before the routes, after gin.Recovery.
-func Middleware(tt *totallytics.Client) gin.HandlerFunc {
+func Middleware(tt *clicktag.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		r, m := tt.Start(c.Request, "gin")
 		if m == nil {

@@ -1,4 +1,4 @@
-package totallyticsgin
+package clicktaggin
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/bitgate/totallytics-go"
+	"github.com/clicktag-io/clicktag-go"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,7 +29,7 @@ func TestMiddleware(t *testing.T) {
 	engine := gin.New()
 	engine.Use(gin.RecoveryWithWriter(io.Discard), Middleware(tt))
 	engine.GET("/users/:id", func(c *gin.Context) {
-		totallytics.SetConsumer(c.Request, "acme")
+		clicktag.SetConsumer(c.Request, "acme")
 		c.String(http.StatusOK, c.Param("id"))
 	})
 	engine.GET("/static/*filepath", ok)
@@ -91,7 +91,7 @@ type sent struct {
 
 // capture returns a client delivering to a local ingest server and a function
 // that shuts the client down and returns everything it sent.
-func capture(t *testing.T) (*totallytics.Client, func() sent) {
+func capture(t *testing.T) (*clicktag.Client, func() sent) {
 	t.Helper()
 	var (
 		mu       sync.Mutex
@@ -111,7 +111,7 @@ func capture(t *testing.T) (*totallytics.Client, func() sent) {
 	}))
 	t.Cleanup(ingest.Close)
 
-	tt := totallytics.New(totallytics.Options{APIKey: "tt_" + strings.Repeat("ab", 24), Endpoint: ingest.URL})
+	tt := clicktag.New(clicktag.Options{APIKey: "tt_" + strings.Repeat("ab", 24), Endpoint: ingest.URL})
 	return tt, func() sent {
 		t.Helper()
 		if err := tt.Shutdown(context.Background()); err != nil {
@@ -147,7 +147,7 @@ func serve(handler http.Handler, paths ...string) {
 
 func expect(t *testing.T, got sent, sdk string, counts map[string]int, samples map[string]bool) {
 	t.Helper()
-	if got.SDK != "totallytics-go/"+totallytics.Version+" "+sdk {
+	if got.SDK != "clicktag-go/"+clicktag.Version+" "+sdk {
 		t.Errorf("sdk = %q", got.SDK)
 	}
 	if !maps.Equal(got.counts(), counts) {

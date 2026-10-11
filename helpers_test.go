@@ -1,4 +1,4 @@
-package totallytics
+package clicktag
 
 import (
 	"context"
@@ -121,7 +121,7 @@ func testBatch(t *testing.T, metrics, samples int) *batch {
 	for i := range errs {
 		errs[i] = errorRow{TS: 1790000000000, Method: "GET", Route: "/r/0", Path: "/r/0", Status: 500}
 	}
-	return newBatch("totallytics-go/test", rows, errs)
+	return newBatch("clicktag-go/test", rows, errs)
 }
 
 func do(h http.Handler, method, target string, header ...string) *httptest.ResponseRecorder {

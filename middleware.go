@@ -1,4 +1,4 @@
-package totallytics
+package clicktag
 
 import (
 	"bufio"
@@ -35,7 +35,7 @@ func stateOf(r *http.Request) *requestState {
 
 // SetRoute sets the route template, such as "/users/:id", recorded for r. It
 // wins over detected routes and Options.Route. Call it from any handler or
-// middleware running inside a Totallytics integration.
+// middleware running inside a Clicktag integration.
 func SetRoute(r *http.Request, route string) {
 	if s := stateOf(r); s != nil && route != "" {
 		s.route.Store(&route)

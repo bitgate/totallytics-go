@@ -1,11 +1,11 @@
-// Package totallytics records server-side API analytics for Totallytics
-// (https://totallytics.com).
+// Package clicktag records server-side API analytics for Clicktag
+// (https://clicktag.io).
 //
 // Requests are aggregated per minute in memory and sent in batches from a
 // background goroutine, so a request only pays for a map update. Request and
 // response bodies, headers and query strings are never sent.
 //
-//	tt := totallytics.New(totallytics.Options{}) // reads TOTALLYTICS_API_KEY
+//	tt := clicktag.New(clicktag.Options{}) // reads CLICKTAG_API_KEY
 //	defer tt.Shutdown(context.Background())
 //
 //	mux := http.NewServeMux()
@@ -13,8 +13,8 @@
 //	http.ListenAndServe(":8080", tt.Middleware(mux))
 //
 // Adapters for chi, gin and echo are separate modules under
-// github.com/bitgate/totallytics-go, so this package has no dependencies.
-package totallytics
+// github.com/clicktag-io/clicktag-go, so this package has no dependencies.
+package clicktag
 
 import (
 	"context"
@@ -29,8 +29,8 @@ import (
 	"time"
 )
 
-// DefaultEndpoint is the Totallytics ingest URL.
-const DefaultEndpoint = "https://totallytics.com/api/ingest"
+// DefaultEndpoint is the Clicktag ingest URL.
+const DefaultEndpoint = "https://clicktag.io/api/ingest"
 
 const (
 	defaultMaxBatchRows  = 1000
@@ -48,7 +48,7 @@ const (
 
 // Options configures a Client. The zero value is ready to use.
 type Options struct {
-	// APIKey authenticates batches. It defaults to the TOTALLYTICS_API_KEY
+	// APIKey authenticates batches. It defaults to the CLICKTAG_API_KEY
 	// environment variable; without a key nothing is recorded.
 	APIKey string
 
@@ -115,6 +115,9 @@ func New(opts Options) *Client {
 func newClient(opts Options, configure func(*Client)) *Client {
 	apiKey := strings.TrimSpace(opts.APIKey)
 	if apiKey == "" {
+		apiKey = strings.TrimSpace(os.Getenv("CLICKTAG_API_KEY"))
+	}
+	if apiKey == "" {
 		apiKey = strings.TrimSpace(os.Getenv("TOTALLYTICS_API_KEY"))
 	}
 	endpoint := opts.Endpoint
@@ -142,7 +145,7 @@ func newClient(opts Options, configure func(*Client)) *Client {
 	}
 
 	if apiKey == "" {
-		log.debug("no API key (set TOTALLYTICS_API_KEY or Options.APIKey), requests are not recorded")
+		log.debug("no API key (set CLICKTAG_API_KEY or Options.APIKey), requests are not recorded")
 		close(c.stopped)
 		return c
 	}
@@ -158,7 +161,7 @@ func (c *Client) Flush(ctx context.Context) error {
 	}
 	c.flush(true)
 	if err := c.transport.settle(ctx); err != nil {
-		return fmt.Errorf("totallytics: flush: %w", err)
+		return fmt.Errorf("clicktag: flush: %w", err)
 	}
 	return nil
 }
@@ -179,11 +182,11 @@ func (c *Client) Shutdown(ctx context.Context) error {
 	select {
 	case <-c.stopped:
 	case <-ctx.Done():
-		return fmt.Errorf("totallytics: shutdown: %w", ctx.Err())
+		return fmt.Errorf("clicktag: shutdown: %w", ctx.Err())
 	}
 	c.flush(true)
 	if err := c.transport.settle(ctx); err != nil {
-		return fmt.Errorf("totallytics: shutdown: %w", err)
+		return fmt.Errorf("clicktag: shutdown: %w", err)
 	}
 	return nil
 }
@@ -267,7 +270,7 @@ func seal(buffer *aggregator, sdk string, maxRows int) []*batch {
 }
 
 func (c *Client) sdk() string {
-	sdk := "totallytics-go/" + Version
+	sdk := "clicktag-go/" + Version
 	if integration := c.integration.Load(); integration != nil {
 		sdk += " " + *integration
 	}
@@ -373,11 +376,11 @@ func (l logger) get() *slog.Logger {
 }
 
 func (l logger) debug(msg string, args ...any) {
-	l.get().Debug("totallytics: "+msg, args...)
+	l.get().Debug("clicktag: "+msg, args...)
 }
 
 func (l logger) warn(msg string, args ...any) {
-	l.get().Warn("totallytics: "+msg, args...)
+	l.get().Warn("clicktag: "+msg, args...)
 }
 
 // recoverPanic keeps a panic inside the SDK from reaching the caller. It must

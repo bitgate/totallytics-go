@@ -1,23 +1,23 @@
-// Package totallyticschi records requests to a chi router for Totallytics
+// Package clicktagchi records requests to a chi router for Clicktag
 // API analytics, with chi route patterns as templates.
 //
 //	r := chi.NewRouter()
-//	r.Use(totallyticschi.Middleware(tt))
+//	r.Use(clicktagchi.Middleware(tt))
 //	r.Get("/users/{id}", getUser) // recorded as "/users/:id"
-package totallyticschi
+package clicktagchi
 
 import (
 	"net/http"
 	"strings"
 
-	"github.com/bitgate/totallytics-go"
+	"github.com/clicktag-io/clicktag-go"
 	"github.com/go-chi/chi/v5"
 )
 
 // Middleware records every request the router handles, including 404s and
 // panics. Register it first with r.Use, since chi only sets the route pattern
 // inside the router.
-func Middleware(tt *totallytics.Client) func(http.Handler) http.Handler {
+func Middleware(tt *clicktag.Client) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return tt.Handler(next, "chi", route)
 	}

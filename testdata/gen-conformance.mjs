@@ -1,15 +1,15 @@
 // Replays scripted requests through the JavaScript SDK and prints what it
 // sends, for conformance_test.go. From the repo root:
-//   node testdata/gen-conformance.mjs ../totallytics-js > testdata/conformance.json
+//   node testdata/gen-conformance.mjs ../clicktag-js > testdata/conformance.json
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 const root = process.argv[2]
 if (!root) {
-  console.error('usage: node testdata/gen-conformance.mjs <path to totallytics-js>')
+  console.error('usage: node testdata/gen-conformance.mjs <path to clicktag-js>')
   process.exit(2)
 }
-const { Totallytics, VERSION, bucket } = await import(pathToFileURL(join(root, 'dist', 'index.js')).href)
+const { Clicktag, VERSION, bucket } = await import(pathToFileURL(join(root, 'dist', 'index.js')).href)
 
 const KEY = 'tt_' + 'ab'.repeat(24)
 const MINUTE = Date.UTC(2026, 8, 26, 12, 0, 0)
@@ -23,7 +23,7 @@ globalThis.fetch = async (_url, init) => {
 
 async function replay(name, entries, maxBatchRows = 1000) {
   sent = []
-  const client = new Totallytics({ apiKey: KEY, endpoint: 'https://ingest.invalid/api/ingest', maxBatchRows })
+  const client = new Clicktag({ apiKey: KEY, endpoint: 'https://ingest.invalid/api/ingest', maxBatchRows })
   for (const { error, ...entry } of entries) {
     client.record(error === undefined ? entry : { ...entry, error: new Error(error) })
   }
@@ -101,7 +101,7 @@ for (let i = 0; i < 2000; i++) values.push(Math.floor(random() * 5e9) / 1e6)
 const encode = (ms) => (Number.isFinite(ms) ? ms : String(ms))
 const buckets = values.map((ms) => [encode(ms), bucket(ms)])
 
-const lines = ['{', `  "sdk": ${JSON.stringify('totallytics-js/' + VERSION)},`, '  "buckets": [']
+const lines = ['{', `  "sdk": ${JSON.stringify('clicktag-js/' + VERSION)},`, '  "buckets": [']
 buckets.forEach((pair, i) => lines.push('    ' + JSON.stringify(pair) + (i < buckets.length - 1 ? ',' : '')))
 lines.push('  ],', '  "cases": [')
 cases.forEach((c, i) => lines.push('    ' + JSON.stringify(c) + (i < cases.length - 1 ? ',' : '')))

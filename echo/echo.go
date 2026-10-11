@@ -1,16 +1,16 @@
-// Package totallyticsecho records requests to an echo instance for
-// Totallytics API analytics, with echo routes as templates.
+// Package clicktagecho records requests to an echo instance for
+// Clicktag API analytics, with echo routes as templates.
 //
 //	e := echo.New()
-//	e.Use(middleware.Recover(), totallyticsecho.Middleware(tt))
+//	e.Use(middleware.Recover(), clicktagecho.Middleware(tt))
 //	e.GET("/users/:id", getUser)
-package totallyticsecho
+package clicktagecho
 
 import (
 	"fmt"
 	"net/http"
 
-	"github.com/bitgate/totallytics-go"
+	"github.com/clicktag-io/clicktag-go"
 	"github.com/labstack/echo/v4"
 )
 
@@ -21,7 +21,7 @@ const statusClientClosedRequest = 499
 // A returned error goes through the echo error handler right away, so the
 // status the client gets is recorded along with the error, and is then
 // returned unchanged. Register it with e.Use, after middleware.Recover.
-func Middleware(tt *totallytics.Client) echo.MiddlewareFunc {
+func Middleware(tt *clicktag.Client) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r, m := tt.Start(c.Request(), "echo")

@@ -1,4 +1,4 @@
-package totallytics
+package clicktag
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ const (
 	maxReplyBytes  = 64 << 10
 )
 
-const userAgent = "totallytics-go/" + Version
+const userAgent = "clicktag-go/" + Version
 
 // unauthorizedWarned makes the rejected key warning fire once per process.
 var unauthorizedWarned atomic.Bool
@@ -262,7 +262,7 @@ func (t *transport) send(b *batch) outcome {
 		return outcomeDone
 	case status == http.StatusUnauthorized:
 		if unauthorizedWarned.CompareAndSwap(false, true) {
-			t.log.warn("ingest rejected the API key (401), analytics are being dropped. Check TOTALLYTICS_API_KEY.")
+			t.log.warn("ingest rejected the API key (401), analytics are being dropped. Check CLICKTAG_API_KEY.")
 		}
 		return outcomeDrop
 	case status == http.StatusRequestEntityTooLarge:

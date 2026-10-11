@@ -1,9 +1,9 @@
-module github.com/bitgate/totallytics-go/echo
+module github.com/clicktag-io/clicktag-go/echo
 
 go 1.22
 
 require (
-	github.com/bitgate/totallytics-go v0.1.0
+	github.com/clicktag-io/clicktag-go v0.2.0
 	github.com/labstack/echo/v4 v4.13.3
 )
 
@@ -20,4 +20,4 @@ require (
 	golang.org/x/time v0.8.0 // indirect
 )
 
-replace github.com/bitgate/totallytics-go => ../
+replace github.com/clicktag-io/clicktag-go => ../
